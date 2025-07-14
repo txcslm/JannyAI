@@ -234,6 +234,7 @@ private static async Task<int> GetLastPageNumberAsync()
     chromeOptions.AddArgument("--no-sandbox");
     chromeOptions.AddArgument("--disable-dev-shm-usage");
     chromeOptions.AddArgument("--disable-gpu");
+    chromeOptions.AddArgument("--disable-images");
     chromeOptions.AddArgument("--window-size=1280,720");
 
     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
