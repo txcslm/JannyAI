@@ -1,0 +1,13 @@
+JannyAI/bin/Debug/net9.0/ChromeProfile
+JannyAI/ChromeProfile
+JannyAI/bin/Debug/net9.0/runtimes
+JannyAI/bin/Debug/net9.0/selenium-manager
+JannyAI/obj
+JannyAI/bin/Debug/net9.0/.DS_Store
+*.dll
+JannyAI/bin/Debug/net9.0/jannyai_characters/.DS_Store
+JannyAI/bin/Debug/.DS_Store
+JannyAI/.DS_Store
+JannyAI/bin/.DS_Store
+.DS_Store
+JannyAI/jannyai_parser.log
