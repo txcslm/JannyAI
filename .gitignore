@@ -11,3 +11,4 @@ JannyAI/.DS_Store
 JannyAI/bin/.DS_Store
 .DS_Store
 JannyAI/jannyai_parser.log
+*.log
