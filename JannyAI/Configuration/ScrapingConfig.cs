@@ -36,4 +36,9 @@ public static class ScrapingConfig
     public static string ChromeProfileFolderPath => Path.Combine(Environment.CurrentDirectory, "ChromeProfile");
     public static string LogFilePath => Path.Combine(Environment.CurrentDirectory, "jannyai_parser.log");
     public static string CharacterIndexFilePath => Path.Combine(DownloadFolderPath, "downloaded_characters.txt");
+    
+    // GitHub настройки
+    public static bool UseGitHubStorage => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_TOKEN"));
+    public static string GitHubCharactersPath => "characters";
+    public static string DefaultImageExtension => "png";
 }

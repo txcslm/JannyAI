@@ -10,14 +10,16 @@ public class ScrapingPresenter
     private readonly IConsoleView _view;
     private readonly IWebDriverService _webDriverService;
     private readonly IFileService _fileService;
+    private readonly IStorageService _storageService;
     private readonly ILogger _logger;
     private readonly HashSet<string> _downloadedCharacterIds;
 
-    public ScrapingPresenter(IConsoleView view, IWebDriverService webDriverService, IFileService fileService, ILogger logger)
+    public ScrapingPresenter(IConsoleView view, IWebDriverService webDriverService, IFileService fileService, IStorageService storageService, ILogger logger)
     {
         _view = view;
         _webDriverService = webDriverService;
         _fileService = fileService;
+        _storageService = storageService;
         _logger = logger;
         _downloadedCharacterIds = new HashSet<string>();
     }
@@ -50,12 +52,15 @@ public class ScrapingPresenter
 
     private async Task InitializeAsync()
     {
-        await _fileService.InitializeDirectoriesAsync();
+        await _storageService.InitializeAsync();
         
-        var downloadedIds = await _fileService.LoadDownloadedCharacterIdsAsync();
-        foreach (var id in downloadedIds)
+        if (!ScrapingConfig.UseGitHubStorage)
         {
-            _downloadedCharacterIds.Add(id);
+            var downloadedIds = await _fileService.LoadDownloadedCharacterIdsAsync();
+            foreach (var id in downloadedIds)
+            {
+                _downloadedCharacterIds.Add(id);
+            }
         }
         
         await _webDriverService.InitializeAsync();
@@ -137,7 +142,12 @@ public class ScrapingPresenter
         {
             var character = characters[i];
             
-            if (_downloadedCharacterIds.Contains(character.Id))
+            // Проверяем через StorageService
+            bool characterExists = ScrapingConfig.UseGitHubStorage 
+                ? await _storageService.CharacterExistsAsync(character.Id)
+                : _downloadedCharacterIds.Contains(character.Id);
+            
+            if (characterExists)
             {
                 _view.ShowCharacterSkipped(character.Id);
                 continue;
@@ -156,18 +166,23 @@ public class ScrapingPresenter
                 
                 if (downloadedFile != null)
                 {
-                    var moveSuccess = await _fileService.MoveDownloadedFileAsync(character.Id, downloadedFile);
+                    // Читаем файл как байты для загрузки в GitHub
+                    var imageData = await File.ReadAllBytesAsync(downloadedFile);
+                    var fileName = $"{character.Id}.{ScrapingConfig.DefaultImageExtension}";
                     
-                    if (moveSuccess)
+                    // Сохраняем через StorageService
+                    var saveSuccess = await _storageService.SaveCharacterImageAsync(character.Id, imageData, fileName);
+                    
+                    if (saveSuccess)
                     {
-                        await _fileService.SaveDownloadedCharacterIdAsync(character.Id);
+                        await _storageService.SaveCharacterIndexAsync(character.Id);
                         _downloadedCharacterIds.Add(character.Id);
                         _view.ShowCharacterSuccess(character.Id);
                         processedCount++;
                     }
                     else
                     {
-                        _view.ShowCharacterFailure(character.Id, "Не удалось переместить файл");
+                        _view.ShowCharacterFailure(character.Id, "Не удалось сохранить файл");
                     }
                 }
                 else
